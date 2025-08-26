@@ -318,11 +318,15 @@
                 switch (response.status) {
                     case 429: {
                         console.warn("rate limited, retrying...");
-                        await new Promise((res) => setTimeout(res, delayMs));
+                        await new Promise((res) => setTimeout(res, 5100));
                         continue; // retry
                     }
                     case 302: {
                         window.location.href = response.headers.get("Location");
+                    }
+                    case 403: {
+                        input.value = "";
+                        input.focus();
                     }
                     default: {
                         break;

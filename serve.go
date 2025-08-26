@@ -84,7 +84,7 @@ func TestRealIP(w http.ResponseWriter, r *http.Request) (string, error) {
 	realIP := r.Header.Get(IPHeader)
 	if net.ParseIP(realIP) == nil {
 		log.Printf("nginx configuration error: A valid '%s' header is required.", IPHeader)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "nginx misconfiguration", http.StatusInternalServerError)
 		return "", errors.New("missing real ip header")
 	}
 	return realIP, nil
@@ -126,12 +126,9 @@ func isAuthenticated(ip string) bool {
 	if !ok {
 		return false
 	}
-	lastSeen, ok := memo.(time.Time)
-	if !ok {
-		log.Fatalf("this should be impossible")
-	}
+	lastSeen, _ := memo.(time.Time)
 	now := time.Now()
-	if now.Compare(lastSeen.Add(time.Duration(cfg.Timeout)*time.Minute)) < 0 {
+	if now.Compare(lastSeen.Add(time.Duration(cfg.Timeout)*time.Minute)) <= 0 {
 		// Update the lastseen and return true.
 		visitorList.Store(ip, time.Now())
 		return true
