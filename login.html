@@ -301,12 +301,16 @@
         input.addEventListener("input", () => {
             const value = input.value;
             if (/^\d{6}$/.test(value)) {
-                form.submit();
+                form.dispatchEvent(
+                    new Event("submit", { cancelable: true, bubbles: true })
+                );
             }
         });
 
         form.addEventListener("submit", async (e) => {
             e.preventDefault();
+
+            const start = Date.now();
 
             while (true) {
                 const response = await fetch(window.location.href, {
@@ -318,12 +322,16 @@
                 switch (response.status) {
                     case 429: {
                         console.warn("rate limited, retrying...");
-                        await new Promise((res) => setTimeout(res, 5100));
-                        continue; // retry
+                        await new Promise((res) => setTimeout(res, 6000));
+                        if ((Date.now() - start) / 1000 > 30) {
+                            window.location.reload();
+                            break;
+                        }
+                        continue;
                     }
                     case 302: {
                         window.location.href = response.headers.get("Location");
-                        continue;
+                        break;
                     }
                     case 403: {
                         window.location.reload();
