@@ -323,10 +323,11 @@
                     }
                     case 302: {
                         window.location.href = response.headers.get("Location");
+                        continue;
                     }
                     case 403: {
-                        input.value = "";
-                        input.focus();
+                        window.location.reload();
+                        break;
                     }
                     default: {
                         break;
